@@ -1,52 +1,47 @@
-version: "3.3"
-    
+version: '3'
+
 services:
-#Database
+  # Database
   db:
     image: mysql:5.7
     volumes:
       - db_data:/var/lib/mysql
-    command: '--default-authentication-plugin=mysql_native_password'
     restart: always
-    env_file: .env
     environment:
-      MYSQL_DATABASE: mysel-portfolio
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
     networks:
       - wpsite
-  #phpMyadmin
+  # phpmyadmin
   phpmyadmin:
     depends_on:
       - db
-    restart: always
     image: phpmyadmin/phpmyadmin
-    #domainname: example.com
+    restart: always
     ports:
-      - "8081:8081"
+      - '8080:80'
     environment:
-      PMA_HOSTS: db
-      #- PMA_VERBOSES=production-db1,production-db2,dev-db1,dev-db2
-      PMA_USER: root
-      PMA_PASSWORD: root
-      #- PMA_ABSOLUTE_URI=http://example.com/phpmyadmin/
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password 
     networks:
-    - wpsite
-  #wordpress
+      - wpsite
+  # Wordpress
   wordpress:
     depends_on:
       - db
     image: wordpress:latest
-    volumes: [./:/var/www/html]
     ports:
-      - "8000:8000"
+      - '8000:80'
     restart: always
-    env_file: .env
+    volumes: ['./:/var/www/html']
     environment:
-      - WORDPRESS_DB_HOST=db:3306
-      - WORDPRESS_DB_USER=$MYSQL_USER
-      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
-      - WORDPRESS_DB_NAME=$MYSQL_USER
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
     networks:
-        - wpsite
+      - wpsite
 networks:
   wpsite:
 volumes:
